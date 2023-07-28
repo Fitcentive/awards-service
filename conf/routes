@@ -3,7 +3,74 @@
 # This file defines all application routes (Higher priority routes first)
 # ~~~~
 
-GET      /api/places/health                         app.place2meet.places.controllers.HealthController.healthCheck
+GET      /api/meetup/health                                                             io.fitcentive.meetup.controllers.HealthController.healthCheck
 
-POST     /api/places/discover                       app.place2meet.places.controllers.PlacesController.fetchLocations
-      
+POST     /api/meetup/discover                                                           io.fitcentive.meetup.controllers.LocationsController.fetchLocations
+POST     /api/meetup/discover/overlap                                                   io.fitcentive.meetup.controllers.LocationsController.fetchIntersect
+
+# CRUD operations on meetups
+GET      /api/meetup/meetups/:meetupId                                                   io.fitcentive.meetup.controllers.MeetupController.getMeetupById(meetupId: java.util.UUID)
+PUT      /api/meetup/meetups/:meetupId                                                   io.fitcentive.meetup.controllers.MeetupController.updateMeetup(meetupId: java.util.UUID)
+PUT      /api/meetup/meetups/:meetupId/chat-room/:chatRoomId                             io.fitcentive.meetup.controllers.MeetupController.updateMeetupChatRoom(meetupId: java.util.UUID, chatRoomId: java.util.UUID)
+DELETE   /api/meetup/meetups/:meetupId                                                   io.fitcentive.meetup.controllers.MeetupController.deleteMeetup(meetupId: java.util.UUID)
+POST     /api/meetup/meetups                                                             io.fitcentive.meetup.controllers.MeetupController.createNewMeetup
+GET      /api/meetup/meetups                                                             io.fitcentive.meetup.controllers.MeetupController.getMeetupsForUser(limit: Option[Int] ?= None, offset: Option[Int] ?= None, filterBy: Option[String] ?= None, status: Option[String] ?= None)
+GET      /api/meetup/meetups/month/:dateString                                           io.fitcentive.meetup.controllers.MeetupController.getMeetupsForUserByMonth(dateString: String, offsetInMinutes: Int)
+
+GET      /api/meetup/detailed-meetups                                                    io.fitcentive.meetup.controllers.MeetupController.getDetailedMeetupsForUser(limit: Option[Int] ?= None, offset: Option[Int] ?= None, filterBy: Option[String] ?= None, status: Option[String] ?= None)
+GET      /api/meetup/detailed-meetups/:meetupId                                          io.fitcentive.meetup.controllers.MeetupController.getDetailedMeetupByIdForUser(meetupId: java.util.UUID)
+GET      /api/meetup/detailed-meetups/month/:dateString                                  io.fitcentive.meetup.controllers.MeetupController.getDetailedMeetupsForUserByMonth(dateString: String, offsetInMinutes: Int)
+
+# CRUD operations on locations
+PUT      /api/meetup/locations                                                           io.fitcentive.meetup.controllers.LocationsController.upsertLocation
+POST     /api/meetup/locations                                                           io.fitcentive.meetup.controllers.LocationsController.searchLocations(query: String)
+GET      /api/meetup/locations/:locationId                                               io.fitcentive.meetup.controllers.LocationsController.getLocation(locationId: java.util.UUID)
+DELETE   /api/meetup/locations/:locationId                                               io.fitcentive.meetup.controllers.LocationsController.deleteLocation(locationId: java.util.UUID)
+GET      /api/meetup/fsq-locations/:fsqId                                                io.fitcentive.meetup.controllers.LocationsController.searchLocationByFsqId(fsqId: String)
+
+# CRUD operations on meetup participants
+GET      /api/meetup/meetups/:meetupId/participants                                      io.fitcentive.meetup.controllers.ParticipantsController.getMeetupParticipants(meetupId: java.util.UUID)
+DELETE   /api/meetup/meetups/:meetupId/participants                                      io.fitcentive.meetup.controllers.ParticipantsController.removeAllMeetupParticipants(meetupId: java.util.UUID)
+POST     /api/meetup/meetups/:meetupId/participants/:participantId                       io.fitcentive.meetup.controllers.ParticipantsController.addParticipantToMeetup(meetupId: java.util.UUID, participantId: java.util.UUID)
+DELETE   /api/meetup/meetups/:meetupId/participants/:participantId                       io.fitcentive.meetup.controllers.ParticipantsController.removeMeetupParticipant(meetupId: java.util.UUID, participantId: java.util.UUID)
+
+# Operations on meetup decisions
+PUT     /api/meetup/meetups/:meetupId/participants/:participantId/decision               io.fitcentive.meetup.controllers.MeetupController.addParticipantDecisionToMeetup(meetupId: java.util.UUID, participantId: java.util.UUID)
+DELETE  /api/meetup/meetups/:meetupId/participants/:participantId/decision               io.fitcentive.meetup.controllers.MeetupController.removeParticipantDecisionFromMeetup(meetupId: java.util.UUID, participantId: java.util.UUID)
+GET     /api/meetup/meetups/:meetupId/decisions                                          io.fitcentive.meetup.controllers.MeetupController.getParticipantsDecisionsForMeetup(meetupId: java.util.UUID)
+
+# Operations on meetup chat rooms
+GET     /api/meetup/meetups/chat-room/:chatRoomId                                        io.fitcentive.meetup.controllers.MeetupController.getMeetupIfAssociatedChatRoomExists(chatRoomId: java.util.UUID)
+
+# Operations on availabilities
+PUT      /api/meetup/meetups/:meetupId/participants/:participantId/availabilities        io.fitcentive.meetup.controllers.AvailabilitiesController.upsertMeetupParticipantAvailabilities(meetupId: java.util.UUID, participantId: java.util.UUID)
+DELETE   /api/meetup/meetups/:meetupId/participants/:participantId/availabilities        io.fitcentive.meetup.controllers.AvailabilitiesController.deleteMeetupParticipantAvailabilities(meetupId: java.util.UUID, participantId: java.util.UUID)
+GET      /api/meetup/meetups/:meetupId/participants/:participantId/availabilities        io.fitcentive.meetup.controllers.AvailabilitiesController.getMeetupParticipantAvailabilities(meetupId: java.util.UUID, participantId: java.util.UUID)
+
+# CRUD operations on meetup comments
+GET      /api/meetup/meetups/:meetupId/comments                                          io.fitcentive.meetup.controllers.MeetupController.getMeetupComments(meetupId: java.util.UUID)
+DELETE   /api/meetup/meetups/:meetupId/comments/:commentId                               io.fitcentive.meetup.controllers.MeetupController.removeCommentFromMeetup(meetupId: java.util.UUID, commentId: java.util.UUID)
+POST     /api/meetup/meetups/:meetupId/comments                                          io.fitcentive.meetup.controllers.MeetupController.addCommentToMeetup(meetupId: java.util.UUID)
+
+# CRUD operations on meetup diary entries
+GET      /api/meetup/meetups/:meetupId/user/:userId/diary-entry                          io.fitcentive.meetup.controllers.DiaryController.getDiaryEntriesForMeetup(meetupId: java.util.UUID, userId: java.util.UUID)
+
+DELETE   /api/meetup/meetups/:meetupId/cardio-entry/:diaryEntryId                        io.fitcentive.meetup.controllers.DiaryController.deleteCardioDiaryEntryForMeetup(meetupId: java.util.UUID, diaryEntryId: java.util.UUID)
+POST     /api/meetup/meetups/:meetupId/cardio-entry/:diaryEntryId                        io.fitcentive.meetup.controllers.DiaryController.upsertCardioDiaryEntryForMeetup(meetupId: java.util.UUID, diaryEntryId: java.util.UUID)
+
+DELETE   /api/meetup/meetups/:meetupId/strength-entry/:diaryEntryId                      io.fitcentive.meetup.controllers.DiaryController.deleteStrengthDiaryEntryForMeetup(meetupId: java.util.UUID, diaryEntryId: java.util.UUID)
+POST     /api/meetup/meetups/:meetupId/strength-entry/:diaryEntryId                      io.fitcentive.meetup.controllers.DiaryController.upsertStrengthDiaryEntryForMeetup(meetupId: java.util.UUID, diaryEntryId: java.util.UUID)
+
+DELETE   /api/meetup/meetups/:meetupId/food-entry/:diaryEntryId                          io.fitcentive.meetup.controllers.DiaryController.deleteFoodDiaryEntryForMeetup(meetupId: java.util.UUID, diaryEntryId: java.util.UUID)
+POST     /api/meetup/meetups/:meetupId/food-entry/:diaryEntryId                          io.fitcentive.meetup.controllers.DiaryController.upsertFoodDiaryEntryForMeetup(meetupId: java.util.UUID, diaryEntryId: java.util.UUID)
+
+POST     /api/meetup/food-entry/get-meetups-by-food-entry-ids                            io.fitcentive.meetup.controllers.DiaryController.upsertFoodDiaryEntryForMeetup(meetupId: java.util.UUID, diaryEntryId: java.util.UUID)
+
+DELETE   /api/meetup/meetups/:meetupId/associated-diary-entries                          io.fitcentive.meetup.controllers.DiaryController.removeAssociatedDiaryEntriesForMeetupByUser(meetupId: java.util.UUID)
+
+# Internal routes
+DELETE   /api/internal/meetup/cardio-entry/:diaryEntryId                                 io.fitcentive.meetup.controllers.DiaryController.deleteCardioDiaryEntryById(diaryEntryId: java.util.UUID)
+DELETE   /api/internal/meetup/strength-entry/:diaryEntryId                               io.fitcentive.meetup.controllers.DiaryController.deleteStrengthDiaryEntryById(diaryEntryId: java.util.UUID)
+DELETE   /api/internal/meetup/food-entry/:diaryEntryId                                   io.fitcentive.meetup.controllers.DiaryController.deleteFoodDiaryEntryById(diaryEntryId: java.util.UUID)
+
+DELETE   /api/internal/meetup/user/:userId                                               io.fitcentive.meetup.controllers.DiaryController.deleteAllMeetupDataForUser(userId: java.util.UUID)

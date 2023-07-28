@@ -1,8 +1,8 @@
-name := "places"
+name := "meetup"
 
 version := "1.0"
 
-lazy val `places` = (project in file("."))
+lazy val `meetup` = (project in file("."))
   .enablePlugins(PlayScala)
   .disablePlugins(PlayLogback)
 
@@ -22,8 +22,8 @@ libraryDependencies ++= Seq(
   "org.typelevel" %% "cats-core"   % "2.7.0",
   "org.typelevel" %% "cats-effect" % "3.3.4",
   // App sdk
-  "app.place2meet" %% "app-sdk" % "1.0.0",
-//  "app.place2meet" %% "message-registry" % "1.0.0",
+  "io.fitcentive" %% "app-sdk"          % "1.0.0",
+  "io.fitcentive" %% "message-registry" % "1.0.0",
   // SMTP
   "javax.mail"   % "javax.mail-api" % "1.6.2",
   "com.sun.mail" % "javax.mail"     % "1.6.2",
