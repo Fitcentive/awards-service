@@ -1,7 +1,7 @@
 package io.fitcentive.awards.modules.providers
 
 import com.google.auth.oauth2.ServiceAccountCredentials
-import io.fitcentive.awards.api.MeetupApi
+import io.fitcentive.awards.api.MetricsApi
 import io.fitcentive.awards.infrastructure.contexts.PubSubExecutionContext
 import io.fitcentive.awards.infrastructure.handlers.MessageEventHandlers
 import io.fitcentive.awards.infrastructure.pubsub.SubscriptionManager
@@ -15,12 +15,12 @@ import scala.concurrent.ExecutionContext
 class SubscriptionManagerProvider @Inject() (
   publisher: PubSubPublisher,
   settingsService: SettingsService,
-  _meetupApi: MeetupApi
+  _metricsApi: MetricsApi,
 )(implicit ec: PubSubExecutionContext)
   extends Provider[SubscriptionManager] {
 
   trait SubscriptionEventHandlers extends MessageEventHandlers {
-    override def meetupApi: MeetupApi = _meetupApi
+    override def metricsApi: MetricsApi = _metricsApi
     override implicit def executionContext: ExecutionContext = ec
   }
 

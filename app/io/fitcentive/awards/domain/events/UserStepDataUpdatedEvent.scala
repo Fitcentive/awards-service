@@ -6,13 +6,15 @@ import io.circe.generic.semiauto.deriveCodec
 import io.fitcentive.sdk.gcp.pubsub.PubSubMessageConverter
 import io.fitcentive.sdk.utils.PubSubOps
 
-case class ScheduledMeetupReminderEvent(meetupId: String) extends EventMessage
+import java.util.UUID
 
-object ScheduledMeetupReminderEvent extends PubSubOps {
+case class UserStepDataUpdatedEvent(userId: UUID, date: String, stepsTaken: Int) extends EventMessage
 
-  implicit val codec: Codec[ScheduledMeetupReminderEvent] =
-    deriveCodec[ScheduledMeetupReminderEvent]
+object UserStepDataUpdatedEvent extends PubSubOps {
 
-  implicit val converter: PubSubMessageConverter[ScheduledMeetupReminderEvent] =
-    (message: PubsubMessage) => message.decodeUnsafe[ScheduledMeetupReminderEvent]
+  implicit val codec: Codec[UserStepDataUpdatedEvent] =
+    deriveCodec[UserStepDataUpdatedEvent]
+
+  implicit val converter: PubSubMessageConverter[UserStepDataUpdatedEvent] =
+    (message: PubsubMessage) => message.decodeUnsafe[UserStepDataUpdatedEvent]
 }

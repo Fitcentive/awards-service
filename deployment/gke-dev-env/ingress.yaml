@@ -1,8 +1,8 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: meetup-ingress
-  namespace: meetup
+  name: awards-ingress
+  namespace: awards
   annotations:
     kubernetes.io/ingress.class: "nginx"
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
@@ -11,22 +11,22 @@ spec:
   tls:
     - hosts:
         - api.fitcentive.xyz
-      secretName: meetup-tls-certificate
+      secretName: awards-tls-certificate
   rules:
     - host: api.fitcentive.xyz
       http:
         paths:
-          - path: /api/meetup
+          - path: /api/awards
             pathType: Prefix
             backend:
               service:
-                name: meetup-service
+                name: awards-service
                 port:
                   number: 9000
-          - path: /api/internal/meetup
+          - path: /api/internal/awards
             pathType: Prefix
             backend:
               service:
-                name: meetup-service
+                name: awards-service
                 port:
                   number: 9000

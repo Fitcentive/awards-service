@@ -2,25 +2,25 @@ package io.fitcentive.awards.domain.milestones
 
 import play.api.libs.json.{JsString, Writes}
 
-trait Categories {
+trait MetricCategory {
   def stringValue: String
 }
 
-object Categories {
+object MetricCategory {
 
-  def apply(status: String): Categories =
+  def apply(status: String): MetricCategory =
     status match {
       case StepData.stringValue => StepData
-      case _                    => throw new Exception("Unexpected step milestone")
+      case _                    => throw new Exception("Unexpected metric category")
     }
 
-  implicit lazy val writes: Writes[Categories] = {
+  implicit lazy val writes: Writes[MetricCategory] = {
     {
       case StepData => JsString(StepData.stringValue)
     }
   }
 
-  case object StepData extends Categories {
+  case object StepData extends MetricCategory {
     val stringValue = "StepData"
   }
 

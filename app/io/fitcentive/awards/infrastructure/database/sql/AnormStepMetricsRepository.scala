@@ -1,8 +1,8 @@
 package io.fitcentive.awards.infrastructure.database.sql
 
 import anorm.{Macro, RowParser}
-import io.fitcentive.awards.domain.meetup.MeetupParticipant
-import io.fitcentive.awards.repositories.ParticipantsRepository
+import io.fitcentive.awards.domain.metrics.UserStepMetrics
+import io.fitcentive.awards.repositories.StepMetricsRepository
 import io.fitcentive.sdk.infrastructure.contexts.DatabaseExecutionContext
 import io.fitcentive.sdk.infrastructure.database.DatabaseClient
 import play.api.db.Database
@@ -14,93 +14,65 @@ import scala.concurrent.Future
 import scala.util.chaining.scalaUtilChainingOps
 
 @Singleton
-class AnormParticipantsRepository @Inject() (val db: Database)(implicit val dbec: DatabaseExecutionContext)
-  extends ParticipantsRepository
+class AnormStepMetricsRepository @Inject() (val db: Database)(implicit val dbec: DatabaseExecutionContext)
+  extends StepMetricsRepository
   with DatabaseClient {
 
-  import AnormParticipantsRepository._
+  import AnormStepMetricsRepository._
 
-  override def replaceParticipantWithDeletedUserId(participantId: UUID, deletedUserId: UUID): Future[Unit] =
-    Future {
-      executeSqlWithoutReturning(
-        SQL_REPLACE_PARTICIPANT_WITH_DELETED_USER_ID,
-        Seq("participantId" -> participantId, "deletedUserId" -> deletedUserId)
-      )
-    }
-
-  override def getParticipantsForMeetup(meetupId: UUID): Future[Seq[MeetupParticipant]] =
-    Future {
-      getRecords(SQL_GET_MEETUP_PARTICIPANTS, "meetupId" -> meetupId)(participantRowParser).map(_.toDomain)
-    }
-
-  override def getParticipantForMeetup(meetupId: UUID, participantId: UUID): Future[Option[MeetupParticipant]] =
-    Future {
-      getRecordOpt(SQL_GET_MEETUP_PARTICIPANT, "meetupId" -> meetupId, "participantId" -> participantId)(
-        participantRowParser
-      ).map(_.toDomain)
-    }
-
-  override def deleteParticipantFromMeetup(meetupId: UUID, participantId: UUID): Future[Unit] =
-    Future {
-      executeSqlWithoutReturning(
-        SQL_DELETE_PARTICIPANT_FROM_MEETUP,
-        Seq("userId" -> participantId, "meetupId" -> meetupId)
-      )
-    }
-
-  override def insertParticipantIntoMeetup(meetupId: UUID, participantId: UUID): Future[MeetupParticipant] =
+  override def upsertUserStepDataForDay(userId: UUID, dateString: String, stepsTaken: Int): Future[UserStepMetrics] =
     Future {
       Instant.now.pipe { now =>
-        executeSqlWithExpectedReturn[ParticipantsRow](
-          SQL_INSERT_AND_RETURN_MEETUP_PARTICIPANT,
-          Seq("meetupId" -> meetupId, "userId" -> participantId, "now" -> now)
-        )(participantRowParser).toDomain
+        executeSqlWithExpectedReturn[UserStepMetricsRow](
+          SQL_UPSERT_AND_RETURN_USER_STEP_METRIC,
+          Seq("userId" -> userId, "metricDate" -> dateString, "stepsTaken" -> stepsTaken, "now" -> now)
+        )(userStepMetricsRowParser).toDomain
       }
+    }
+
+  override def getUserAllTimeStepsTaken(userId: UUID): Future[Int] =
+    Future {
+      getRecords(SQL_GET_ALL_USER_STEP_DATA, "userId" -> userId)(userStepMetricsRowParser).map(_.steps_taken).sum
     }
 }
 
-object AnormParticipantsRepository {
+object AnormStepMetricsRepository {
 
-  private val SQL_REPLACE_PARTICIPANT_WITH_DELETED_USER_ID: String =
-    s"""
-       |update meetup_participants 
-       |set user_id = {deletedUserId}::uuid 
-       |where user_id = {participantId}::uuid ;
-       |""".stripMargin
-
-  private val SQL_GET_MEETUP_PARTICIPANT: String =
+  private val SQL_GET_ALL_USER_STEP_DATA =
     s"""
        |select *
-       |from meetup_participants m
-       |where m.meetup_id = {meetupId}::uuid
-       |and m.user_id = {participantId}::uuid
+       |from user_step_metrics
+       |where user_id = {userId}::uuid ;
        |""".stripMargin
 
-  private val SQL_GET_MEETUP_PARTICIPANTS: String =
+  private val SQL_UPSERT_AND_RETURN_USER_STEP_METRIC =
     s"""
-       |select *
-       |from meetup_participants m
-       |where m.meetup_id = {meetupId}::uuid
+       |insert into user_step_metrics (user_id, metric_date, steps_taken, created_at, updated_at)
+       |values ({userId}::uuid, {metricDate}, {stepsTaken}, {now}, {now})
+       |on conflict (user_id, metric_date)
+       |do update set 
+       |  steps_taken = {stepsTaken},
+       |  updated_at = {updatedAt}
+       |returning * ;
        |""".stripMargin
 
-  private val SQL_DELETE_PARTICIPANT_FROM_MEETUP: String =
-    s"""
-       |delete from meetup_participants m
-       |where m.user_id = {userId}::uuid and m.meetup_id = {meetupId}::uuid
-       |""".stripMargin
-
-  private val SQL_INSERT_AND_RETURN_MEETUP_PARTICIPANT: String =
-    s"""
-       |insert into meetup_participants(meetup_id, user_id, created_at, updated_at)
-       |values ({meetupId}::uuid, {userId}::uuid, {now}, {now})
-       |returning *;
-       |""".stripMargin
-
-  private case class ParticipantsRow(meetup_id: UUID, user_id: UUID, created_at: Instant, updated_at: Instant) {
-    def toDomain: MeetupParticipant =
-      MeetupParticipant(meetupId = meetup_id, userId = user_id, createdAt = created_at, updatedAt = updated_at)
+  private case class UserStepMetricsRow(
+    user_id: UUID,
+    metric_date: String,
+    steps_taken: Int,
+    created_at: Instant,
+    updated_at: Instant
+  ) {
+    def toDomain: UserStepMetrics =
+      UserStepMetrics(
+        userId = user_id,
+        metricDate = metric_date,
+        stepsTaken = steps_taken,
+        createdAt = created_at,
+        updatedAt = updated_at
+      )
   }
 
-  private val participantRowParser: RowParser[ParticipantsRow] = Macro.namedParser[ParticipantsRow]
+  private val userStepMetricsRowParser: RowParser[UserStepMetricsRow] = Macro.namedParser[UserStepMetricsRow]
 
 }

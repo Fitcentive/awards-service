@@ -1,9 +1,9 @@
 #!/bin/bash
 
-kubectl delete -n meetup deployment/meetup-service
+kubectl delete -n awards deployment/awards-service
 
 # Delete old 1.0 image from gcr
-echo "y" | gcloud container images delete gcr.io/fitcentive-dev-03/meetup:1.0 --force-delete-tags
+echo "y" | gcloud container images delete gcr.io/fitcentive-dev-03/awards:1.0 --force-delete-tags
 
 # Build and push image to gcr
 sbt docker:publish

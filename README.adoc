@@ -1,7 +1,7 @@
-= Meetup Service
+= Awards Service
 
 == Description
-A reactive/rest microservice to handle and serve data pertaining to user meetups and meetup locations
+A reactive/rest microservice to handle and serve data pertaining to awards, achievements and progress
 
 == Pre-requisites
 1. https://www.keycloak.org/guides#getting-started[keycloak server] to validate token
@@ -57,7 +57,7 @@ Note - these pre-requisites need only be done **once ever**. If you are deployin
 === 1. Delete existing deployment and build fresh image
 1. `kubectl delete deployment/diary-service`
 2. `eval $(minikube --profile=hyperkit docker-env)`
-3. `docker image ls | grep meetup`
+3. `docker image ls | grep awards`
 4. `docker image rm user`
 5. `docker image rm <image_hash>`
 6. `sbt docker:publishLocal`
@@ -82,7 +82,7 @@ Note - these pre-requisites need only be done **once ever**. If you are deployin
 
 == Deploy to GKE Dev env
 1. Delete existing 1.0 image first
-- `gcloud container images delete gcr.io/fitcentive-dev-03/meetup:1.0 --force-delete-tags`
+- `gcloud container images delete gcr.io/fitcentive-dev-03/awards:1.0 --force-delete-tags`
 2. Build and push new docker image
 - `sbt -Dpublish.env=dev docker:publish`
 3. Ensure you are on the right `kubectl` context

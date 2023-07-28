@@ -2,12 +2,25 @@ package io.fitcentive.awards.domain.milestones
 
 import play.api.libs.json.{JsString, Writes}
 
-trait Milestone {
-  def stringValue: String
+trait StepMilestone extends Milestone {
+  override def category: MetricCategory = MetricCategory.StepData
 }
 
-object Milestone {
-  def apply(status: String): Milestone =
+object StepMilestone {
+
+  val stepMilestonesInOrder: Seq[StepMilestone] = List(
+    TenThousandSteps,
+    FiftyThousandSteps,
+    HundredThousandSteps,
+    TwoFiftyThousandSteps,
+    FiveHundredThousandSteps,
+    OneMillionStepsSteps,
+    TwoMillionStepsSteps,
+    FiveMillionStepsSteps,
+    TenMillionStepsSteps,
+  )
+
+  def apply(status: String): StepMilestone =
     status match {
       case TenThousandSteps.stringValue         => TenThousandSteps
       case FiftyThousandSteps.stringValue       => FiftyThousandSteps
@@ -18,10 +31,10 @@ object Milestone {
       case TwoMillionStepsSteps.stringValue     => TwoMillionStepsSteps
       case FiveMillionStepsSteps.stringValue    => FiveMillionStepsSteps
       case TenMillionStepsSteps.stringValue     => TenMillionStepsSteps
-      case _                                    => throw new Exception("Unexpected milestone")
+      case _                                    => throw new Exception("Unexpected step milestone")
     }
 
-  implicit lazy val writes: Writes[Milestone] = {
+  implicit lazy val writes: Writes[StepMilestone] = {
     {
       case TenThousandSteps         => JsString(TenThousandSteps.stringValue)
       case FiftyThousandSteps       => JsString(FiftyThousandSteps.stringValue)
@@ -35,31 +48,31 @@ object Milestone {
     }
   }
 
-  case object TenThousandSteps extends Milestone {
+  case object TenThousandSteps extends StepMilestone {
     val stringValue = "TenThousandSteps"
   }
-  case object FiftyThousandSteps extends Milestone {
+  case object FiftyThousandSteps extends StepMilestone {
     val stringValue = "FiftyThousandSteps"
   }
-  case object HundredThousandSteps extends Milestone {
+  case object HundredThousandSteps extends StepMilestone {
     val stringValue = "HundredThousandSteps"
   }
-  case object TwoFiftyThousandSteps extends Milestone {
+  case object TwoFiftyThousandSteps extends StepMilestone {
     val stringValue = "TwoFiftyThousandSteps"
   }
-  case object FiveHundredThousandSteps extends Milestone {
+  case object FiveHundredThousandSteps extends StepMilestone {
     val stringValue = "FiveHundredThousandSteps"
   }
-  case object OneMillionStepsSteps extends Milestone {
+  case object OneMillionStepsSteps extends StepMilestone {
     val stringValue = "OneMillionStepsSteps"
   }
-  case object TwoMillionStepsSteps extends Milestone {
+  case object TwoMillionStepsSteps extends StepMilestone {
     val stringValue = "TwoMillionStepsSteps"
   }
-  case object FiveMillionStepsSteps extends Milestone {
+  case object FiveMillionStepsSteps extends StepMilestone {
     val stringValue = "FiveMillionStepsSteps"
   }
-  case object TenMillionStepsSteps extends Milestone {
+  case object TenMillionStepsSteps extends StepMilestone {
     val stringValue = "TenMillionStepsSteps"
   }
 }

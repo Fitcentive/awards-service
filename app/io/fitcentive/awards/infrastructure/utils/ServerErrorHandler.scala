@@ -1,6 +1,6 @@
 package io.fitcentive.awards.infrastructure.utils
 
-import io.fitcentive.awards.domain.errors.{ChatServiceError, DiaryServiceError, FourSquareServiceError}
+import io.fitcentive.awards.domain.errors.{ChatServiceError, DiaryServiceError}
 import io.fitcentive.sdk.error.{DomainError, EntityConflictError, EntityNotAccessible, EntityNotFoundError}
 import io.fitcentive.sdk.logging.AppLogger
 import io.fitcentive.sdk.utils.DomainErrorHandler
@@ -16,13 +16,12 @@ trait ServerErrorHandler extends DomainErrorHandler with AppLogger {
   }
 
   override def domainErrorHandler: PartialFunction[DomainError, Result] = {
-    case EntityNotFoundError(reason)    => NotFound(reason)
-    case EntityConflictError(reason)    => Conflict(reason)
-    case EntityNotAccessible(reason)    => Forbidden(reason)
-    case FourSquareServiceError(reason) => InternalServerError(reason)
-    case DiaryServiceError(reason)      => InternalServerError(reason)
-    case ChatServiceError(reason)       => InternalServerError(reason)
-    case _                              => InternalServerError("Unexpected error occurred ")
+    case EntityNotFoundError(reason) => NotFound(reason)
+    case EntityConflictError(reason) => Conflict(reason)
+    case EntityNotAccessible(reason) => Forbidden(reason)
+    case DiaryServiceError(reason)   => InternalServerError(reason)
+    case ChatServiceError(reason)    => InternalServerError(reason)
+    case _                           => InternalServerError("Unexpected error occurred ")
   }
 
 }

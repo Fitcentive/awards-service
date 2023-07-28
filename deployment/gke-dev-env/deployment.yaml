@@ -1,19 +1,19 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: meetup-service
-  namespace: meetup
+  name: awards-service
+  namespace: awards
   labels:
-    app: meetup-service
+    app: awards-service
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: meetup-service
+      app: awards-service
   template:
     metadata:
       labels:
-        app: meetup-service
+        app: awards-service
     spec:
       containers:
         # Sidecar container for cloudsql-proxy to connect to CloudSql database - recommended approach by Google for GKE
@@ -27,8 +27,8 @@ spec:
             - name: cloudsql-creds
               mountPath: /secrets/cloudsql
               readOnly: true
-        - name: meetup-service
-          image: gcr.io/fitcentive-dev-03/meetup:1.0
+        - name: awards-service
+          image: gcr.io/fitcentive-dev-03/awards:1.0
           imagePullPolicy: Always
           resources:
             requests:
@@ -42,13 +42,13 @@ spec:
               containerPort: 9000
           readinessProbe:
             httpGet:
-              path: /api/meetup/health
+              path: /api/awards/health
               port: 9000
             initialDelaySeconds: 30
             periodSeconds: 30
           livenessProbe:
             httpGet:
-              path: /api/meetup/health
+              path: /api/awards/health
               port: 9000
             initialDelaySeconds: 120
             periodSeconds: 15
@@ -56,9 +56,9 @@ spec:
             - secretRef:
                 name: internal-service-secret
             - secretRef:
-                name: meetup-service-service-account-credentials
+                name: awards-service-service-account-credentials
             - secretRef:
-                name: meetup-service-cloudsql-database-credentials
+                name: awards-service-cloudsql-database-credentials
           env:
             - name: GCP_PROJECT_NAME
               value: "fitcentive-dev-03"
@@ -72,49 +72,13 @@ spec:
               value: "https://auth.fitcentive.xyz"
             - name: KEYCLOAK_SERVER_URL
               value: "http://keycloak-service-http.keycloak/auth"
-            - name: TOPIC_PARTICIPANT_ADDED_TO_MEETUP
-              value: "participant-added-to-meetup"
-            - name: TOPIC_PARTICIPANT_ADDED_AVAILABILITY_TO_MEETUP
-              value: "participant-added-availability-to-meetup"
-            - name: TOPIC_MEETUP_DECISION
-              value: "meetup-decision"
-            - name: TOPIC_MEETUP_REMINDER
-              value: "meetup-reminder"
-            - name: TOPIC_MEETUP_LOCATION_CHANGED
-              value: "meetup-location-changed"
-            - name: TOPIC_SCHEDULED_MEETUP_REMINDER
-              value: "scheduled-meetup-reminder"
-            - name: TOPIC_SCHEDULED_MEETUP_STATE_TRANSITION
-              value: "scheduled-meetup-state-transition"
-            - name: TOPIC_SCHEDULE_MEETUP_REMINDER_FOR_LATER
-              value: "schedule-meetup-reminder-for-later"
-            - name: TOPIC_CANCEL_SCHEDULED_MEETUP_REMINDER_FOR_LATER
-              value: "cancel-scheduled-meetup-reminder-for-later"
-            - name: TOPIC_SCHEDULE_MEETUP_STATE_TRANSITION_FOR_LATER
-              value: "schedule-meetup-state-transition-for-later"
-            - name: TOPIC_CANCEL_SCHEDULED_MEETUP_STATE_TRANSITION_FOR_LATER
-              value: "cancel-scheduled-meetup-state-transition-for-later"
-            - name: CHAT_SERVICE_HOST
-              value: "http://chat-service.chat"
-            - name: CHAT_SERVICE_PORT
-              value: "4000"
-            - name: USER_SERVICE_HOST
-              value: "http://user-service.user"
-            - name: USER_SERVICE_PORT
-              value: "9000"
-            - name: DIARY_SERVICE_HOST
-              value: "http://diary-service.diary"
-            - name: DIARY_SERVICE_PORT
-              value: "9000"
-            - name: SUBSCRIPTION_SCHEDULED_MEETUP_REMINDER
-              value: "scheduled-meetup-reminder"
-            - name: SUBSCRIPTION_SCHEDULED_MEETUP_STATE_TRANSITION
-              value: "scheduled-meetup-state-transition"
-            - name: DELETED_USER_STATIC_ID
-              value: "aaaaaaaa-aaaa-8bbb-8bbb-aaaaaaaaaaaa"
-            - name: DELETED_USER_STATIC_EMAIL
-              value: "deleted.user@fitcentive.io"
+            - name: TOPIC_USER_ATTAINED_NEW_ACHIEVEMENT_MILESTONE
+              value: "user-attained-new-achievement-milestone"
+            - name: TOPIC_USER_STEP_DATA_UPDATED
+              value: "user-step-data-updated"
+            - name: SUBSCRIPTION_USER_STEP_DATA_UPDATED
+              value: "user-step-data-updated"
       volumes:
         - name: cloudsql-creds
           secret:
-            secretName: meetup-service-cloudsql-instance-credentials
+            secretName: awards-service-cloudsql-instance-credentials
