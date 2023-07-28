@@ -13,7 +13,7 @@ insert into metric_categories (name, description) values ('StepData', 'Relating 
 
 create table milestones (
     name varchar not null constraint pk_milestones primary key,
-    milestone_category varchar not null constraint fk_milestones references categories,
+    milestone_category varchar not null constraint fk_milestones references metric_categories,
     description varchar not null
 );
 
@@ -40,10 +40,10 @@ values ('TenMillionStepsSteps', 'StepData', 'When a user amasses 10,000,000 step
 create table user_milestones (
     user_id uuid not null,
     milestone_name varchar not null constraint fk_milestone_name references milestones,
-    milestone_category varchar not null constraint fk_milestone_category references categories,
+    milestone_category varchar not null constraint fk_milestone_category references metric_categories,
     created_at timestamp not null default now(),
     updated_at timestamp not null default now(),
-    constraint unique_user_milestones unqiue (user_id, milestone_name)
+    constraint unique_user_milestones unique (user_id, milestone_name)
 );
 
 
@@ -54,7 +54,7 @@ create table user_step_metrics (
     steps_taken int not null,
     created_at timestamp not null default now(),
     updated_at timestamp not null default now(),
-    constraint unique_user_metric_per_day unqiue (user_id, metric_date)
+    constraint unique_user_metric_per_day unique (user_id, metric_date)
 )
 
 # -- !Downs

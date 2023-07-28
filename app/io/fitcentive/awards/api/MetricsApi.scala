@@ -18,43 +18,46 @@ class MetricsApi @Inject() (
   settingsService: SettingsService
 )(implicit ec: ExecutionContext) {
 
+  // We wrap this in a future so that the calling event handler can report success immediately instead of waiting
   def handleUserStepDataUpdatedEvent(userId: UUID, date: String, stepsTaken: Int): Future[Unit] =
-    for {
-      _ <- stepMetricsRepository.upsertUserStepDataForDay(userId, date, stepsTaken)
-      allTimeSteps <- stepMetricsRepository.getUserAllTimeStepsTaken(userId)
-      allStepMilestonesAttained <- userMilestonesRepository.getUserMilestonesByCategory(userId, MetricCategory.StepData)
+    Future {
+      for {
+        _ <- stepMetricsRepository.upsertUserStepDataForDay(userId, date, stepsTaken)
+        allTimeSteps <- stepMetricsRepository.getUserAllTimeStepsTaken(userId)
+        allStepMilestonesAttained <-
+          userMilestonesRepository.getUserMilestonesByCategory(userId, MetricCategory.StepData)
 
-      milestoneToBeAttained = {
-        if (allStepMilestonesAttained.isEmpty) {
-          if (allTimeSteps > stepMilestonesToStepCountMap(StepMilestone.TenThousandSteps))
-            Some(StepMilestone.TenThousandSteps)
-          else None
-        } else {
-          val indexOfMostRecentlyAttainedMilestone =
-            StepMilestone.stepMilestonesInOrder.indexOf(allStepMilestonesAttained.last.name)
-          if (indexOfMostRecentlyAttainedMilestone == StepMilestone.stepMilestonesInOrder.size - 1)
-            None // User attained all milestones
-          else {
-            val nextPotentialMilestoneToAchieve =
-              StepMilestone.stepMilestonesInOrder(indexOfMostRecentlyAttainedMilestone + 1)
-
-            if (allTimeSteps > stepMilestonesToStepCountMap(nextPotentialMilestoneToAchieve))
-              Some(nextPotentialMilestoneToAchieve)
+        milestoneToBeAttained = {
+          if (allStepMilestonesAttained.isEmpty) {
+            if (allTimeSteps > stepMilestonesToStepCountMap(StepMilestone.TenThousandSteps))
+              Some(StepMilestone.TenThousandSteps)
             else None
+          } else {
+            val indexOfMostRecentlyAttainedMilestone =
+              StepMilestone.stepMilestonesInOrder.indexOf(allStepMilestonesAttained.last.name)
+            if (indexOfMostRecentlyAttainedMilestone == StepMilestone.stepMilestonesInOrder.size - 1)
+              None // User attained all milestones
+            else {
+              val nextPotentialMilestoneToAchieve =
+                StepMilestone.stepMilestonesInOrder(indexOfMostRecentlyAttainedMilestone + 1)
+
+              if (allTimeSteps > stepMilestonesToStepCountMap(nextPotentialMilestoneToAchieve))
+                Some(nextPotentialMilestoneToAchieve)
+              else None
+            }
+
           }
-
         }
-      }
 
-      _ <- milestoneToBeAttained.fold(Future.unit)(
-        newMilestoneToInsert =>
-          userMilestonesRepository
-            .createUserMilestone(userId, newMilestoneToInsert, MetricCategory.StepData)
-            .flatMap(messageBusService.publishUserAttainedNewAchievementMilestoneEvent)
-      )
+        _ <- milestoneToBeAttained.fold(Future.unit)(
+          newMilestoneToInsert =>
+            userMilestonesRepository
+              .createUserMilestone(userId, newMilestoneToInsert, MetricCategory.StepData)
+              .flatMap(messageBusService.publishUserAttainedNewAchievementMilestoneEvent)
+        )
 
-    } yield ()
-
+      } yield ()
+    }
 }
 
 object MetricsApi {

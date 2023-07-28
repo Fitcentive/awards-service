@@ -52,7 +52,7 @@ object AnormStepMetricsRepository {
        |on conflict (user_id, metric_date)
        |do update set 
        |  steps_taken = {stepsTaken},
-       |  updated_at = {updatedAt}
+       |  updated_at = {now}
        |returning * ;
        |""".stripMargin
 
