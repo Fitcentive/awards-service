@@ -6,7 +6,7 @@
 GET      /api/awards/health                                                             io.fitcentive.awards.controllers.HealthController.healthCheck
 
 GET      /api/awards/achievements                                                       io.fitcentive.awards.controllers.AchievementsController.getUserAchievementMilestonesForAllCategories(milestoneCategory: Option[String] ?= None)
-GET      /api/awards/achievements/milestones-types                                      io.fitcentive.awards.controllers.AchievementsController.getAllAchievementMilestoneTypes(milestoneCategory: Option[String] ?= None)
+GET      /api/awards/achievements/milestone-types                                       io.fitcentive.awards.controllers.AchievementsController.getAllAchievementMilestoneTypes(milestoneCategory: Option[String] ?= None)
 
 
 # Internal routes

@@ -55,7 +55,7 @@ class AnormUserMilestonesRepository @Inject() (val db: Database)(implicit val db
 
   override def getMilestoneTypes: Future[Seq[MilestoneDefinition]] =
     Future {
-      getRecords(SQL_GET_ALL_MILESTONES_BY_CATEGORY)(milestonesRowParser).map(_.toDomain)
+      getRecords(SQL_GET_ALL_MILESTONES)(milestonesRowParser).map(_.toDomain)
     }
 
   override def getMilestoneTypesByCategory(category: MetricCategory): Future[Seq[MilestoneDefinition]] =
