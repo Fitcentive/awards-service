@@ -58,6 +58,15 @@ class MetricsApi @Inject() (
 
       } yield ()
     }
+
+  def deleteAllUserData(userId: UUID): Future[Unit] =
+    for {
+      _ <- Future.unit
+      f1 = userMilestonesRepository.deleteAllUserMilestones(userId)
+      f2 = stepMetricsRepository.deleteAllStepMetrics(userId)
+      _ <- f1
+      _ <- f2
+    } yield ()
 }
 
 object MetricsApi {

@@ -10,3 +10,4 @@ GET      /api/awards/achievements/milestones-types                              
 
 
 # Internal routes
+DELETE   /api/internal/awards/user/:userId                                              io.fitcentive.awards.controllers.MetricsController.deleteUserData(userId: java.util.UUID)

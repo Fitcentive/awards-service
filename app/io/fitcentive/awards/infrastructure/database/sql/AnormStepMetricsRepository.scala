@@ -34,9 +34,20 @@ class AnormStepMetricsRepository @Inject() (val db: Database)(implicit val dbec:
     Future {
       getRecords(SQL_GET_ALL_USER_STEP_DATA, "userId" -> userId)(userStepMetricsRowParser).map(_.steps_taken).sum
     }
+
+  override def deleteAllStepMetrics(userId: UUID): Future[Unit] =
+    Future {
+      executeSqlWithoutReturning(SQL_DELETE_ALL_STEP_METRICS, Seq("userId" -> userId))
+    }
 }
 
 object AnormStepMetricsRepository {
+
+  private val SQL_DELETE_ALL_STEP_METRICS =
+    s"""
+       |delete from user_step_metrics
+       |where user_id = {userId}::uuid ;
+       |""".stripMargin
 
   private val SQL_GET_ALL_USER_STEP_DATA =
     s"""

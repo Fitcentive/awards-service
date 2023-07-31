@@ -63,9 +63,20 @@ class AnormUserMilestonesRepository @Inject() (val db: Database)(implicit val db
       getRecords(SQL_GET_ALL_MILESTONES_BY_CATEGORY, "milestoneCategory" -> category.stringValue)(milestonesRowParser)
         .map(_.toDomain)
     }
+
+  override def deleteAllUserMilestones(userId: UUID): Future[Unit] =
+    Future {
+      executeSqlWithoutReturning(SQL_DELETE_ALL_USER_MILESTONES, Seq("userId" -> userId))
+    }
 }
 
 object AnormUserMilestonesRepository {
+
+  private val SQL_DELETE_ALL_USER_MILESTONES =
+    s"""
+       |delete from user_milestones
+       |where user_id = {userId}::uuid ;
+       |""".stripMargin
 
   private val SQL_GET_ALL_MILESTONES =
     s"""

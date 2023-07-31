@@ -18,4 +18,5 @@ trait UserMilestonesRepository {
   def getUserMilestones(userId: UUID): Future[Seq[UserMilestone]]
   def getMilestoneTypes: Future[Seq[MilestoneDefinition]]
   def getMilestoneTypesByCategory(category: MetricCategory): Future[Seq[MilestoneDefinition]]
+  def deleteAllUserMilestones(userId: UUID): Future[Unit]
 }

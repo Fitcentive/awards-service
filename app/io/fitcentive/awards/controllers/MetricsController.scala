@@ -29,5 +29,12 @@ class MetricsController @Inject() (
   //---------------------
   // Internal routes
   //---------------------
+  def deleteUserData(userId: UUID): Action[AnyContent] =
+    internalAuthAction.async { implicit request =>
+      metricsApi
+        .deleteAllUserData(userId)
+        .map(_ => NoContent)
+        .recover(resultErrorAsyncHandler)
+    }
 
 }
