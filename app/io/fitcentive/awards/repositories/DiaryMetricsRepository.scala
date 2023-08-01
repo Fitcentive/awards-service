@@ -16,5 +16,7 @@ trait DiaryMetricsRepository {
   ): Future[UserDiaryMetrics]
   def getUserAllTimeActivityMinutes(userId: UUID): Future[Int]
   def getUserAllTimeDiaryEntries(userId: UUID): Future[Int]
+  def getUserAllTimeDistinctEntryDates(userId: UUID): Future[Seq[String]]
+  def getUserActivityMinutesForWindow(userId: UUID, windowStart: String, windowEnd: String): Future[Int]
   def deleteAllDiaryMetrics(userId: UUID): Future[Unit]
 }

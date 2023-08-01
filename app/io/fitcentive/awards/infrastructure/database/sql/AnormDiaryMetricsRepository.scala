@@ -1,20 +1,15 @@
 package io.fitcentive.awards.infrastructure.database.sql
 
 import anorm.{Macro, RowParser, SqlParser}
-import io.fitcentive.awards.domain.metrics.{UserDiaryMetrics, UserStepMetrics}
-import io.fitcentive.awards.infrastructure.database.sql.AnormStepMetricsRepository.{
-  userStepMetricsRowParser,
-  SQL_DELETE_ALL_STEP_METRICS,
-  SQL_UPSERT_AND_RETURN_USER_STEP_METRIC,
-  UserStepMetricsRow
-}
-import io.fitcentive.awards.repositories.{DiaryMetricsRepository, StepMetricsRepository}
+import io.fitcentive.awards.domain.metrics.UserDiaryMetrics
+import io.fitcentive.awards.repositories.DiaryMetricsRepository
 import io.fitcentive.sdk.infrastructure.contexts.DatabaseExecutionContext
 import io.fitcentive.sdk.infrastructure.database.DatabaseClient
 import play.api.db.Database
 
+import java.text.SimpleDateFormat
 import java.time.Instant
-import java.util.UUID
+import java.util.{Date, UUID}
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.Future
 import scala.util.chaining.scalaUtilChainingOps
@@ -54,6 +49,27 @@ class AnormDiaryMetricsRepository @Inject() (val db: Database)(implicit val dbec
       )
     }
 
+  override def getUserAllTimeDistinctEntryDates(userId: UUID): Future[Seq[String]] =
+    Future {
+      getRecords[DistinctMetricDateRow](SQL_GET_USER_ALL_TIME_DISTINCT_ENTRY_DATES, "userId" -> userId)(
+        userDistinctMetricDateRowParser
+      ).map(_.toDomain)
+    }
+
+  override def getUserActivityMinutesForWindow(userId: UUID, windowStart: String, windowEnd: String): Future[Int] = {
+    val sdf = new SimpleDateFormat("yyyy-MM-dd")
+    Future {
+      executeSqlWithExpectedReturn[Int](
+        SQL_GET_USER_ACTIVITY_MINUTES_WITHIN_WINDOW,
+        Seq(
+          "userId" -> userId,
+          "windowStartDateString" -> sdf.parse(windowStart),
+          "windowEndDateString" -> sdf.parse(windowEnd)
+        )
+      )(SqlParser.scalar[Int])
+    }
+  }
+
   override def deleteAllDiaryMetrics(userId: UUID): Future[Unit] =
     Future {
       executeSqlWithoutReturning(SQL_DELETE_ALL_DIARY_METRICS, Seq("userId" -> userId))
@@ -61,6 +77,23 @@ class AnormDiaryMetricsRepository @Inject() (val db: Database)(implicit val dbec
 }
 
 object AnormDiaryMetricsRepository {
+  private val SQL_GET_USER_ACTIVITY_MINUTES_WITHIN_WINDOW: String =
+    s"""
+       |select coalesce(sum(activity_minutes), 0)
+       |from user_diary_metrics
+       |where user_id = {userId}::uuid
+       |and metric_date::date >= {windowStartDateString}
+       |and metric_date::date <= {windowEndDateString} ;
+       |""".stripMargin
+
+  private val SQL_GET_USER_ALL_TIME_DISTINCT_ENTRY_DATES: String =
+    s"""
+       |select distinct metric_date::date 
+       |from user_diary_metrics
+       |where user_id = {userId}::uuid
+       |order by metric_date desc ;
+       |""".stripMargin
+
   private val SQL_DELETE_ALL_DIARY_METRICS =
     s"""
        |delete from user_diary_metrics
@@ -112,5 +145,11 @@ object AnormDiaryMetricsRepository {
       )
   }
 
+  private case class DistinctMetricDateRow(metric_date: Date) {
+    def toDomain: String = new SimpleDateFormat("MM-dd-yyyy").format(metric_date)
+  }
+
   private val userDiaryMetricsRowParser: RowParser[UserDiaryMetricsRow] = Macro.namedParser[UserDiaryMetricsRow]
+  private val userDistinctMetricDateRowParser: RowParser[DistinctMetricDateRow] =
+    Macro.namedParser[DistinctMetricDateRow]
 }

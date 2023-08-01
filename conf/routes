@@ -8,6 +8,8 @@ GET      /api/awards/health                                                     
 GET      /api/awards/achievements                                                       io.fitcentive.awards.controllers.AchievementsController.getUserAchievementMilestonesForAllCategories(milestoneCategory: Option[String] ?= None)
 GET      /api/awards/achievements/milestone-types                                       io.fitcentive.awards.controllers.AchievementsController.getAllAchievementMilestoneTypes(milestoneCategory: Option[String] ?= None)
 
+GET      /api/awards/progress/insights                                                  io.fitcentive.awards.controllers.ProgressController.getUserProgressInsights(offsetInMinutes: Int)
+
 
 # Internal routes
 DELETE   /api/internal/awards/user/:userId                                              io.fitcentive.awards.controllers.MetricsController.deleteUserData(userId: java.util.UUID)
