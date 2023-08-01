@@ -3,12 +3,13 @@ package io.fitcentive.awards.domain.config
 import com.typesafe.config.Config
 import io.fitcentive.sdk.config.PubSubSubscriptionConfig
 
-case class SubscriptionsConfig(userStepDataUpdatedSubscription: String) extends PubSubSubscriptionConfig {
+case class SubscriptionsConfig(userStepDataUpdatedSubscription: String, userDiaryEntryCreatedSubscription: String)
+  extends PubSubSubscriptionConfig {
 
-  val subscriptions: Seq[String] = Seq(userStepDataUpdatedSubscription)
+  val subscriptions: Seq[String] = Seq(userStepDataUpdatedSubscription, userDiaryEntryCreatedSubscription)
 }
 
 object SubscriptionsConfig {
   def fromConfig(config: Config): SubscriptionsConfig =
-    SubscriptionsConfig(config.getString("user-step-data-updated"))
+    SubscriptionsConfig(config.getString("user-step-data-updated"), config.getString("user-diary-entry-created"))
 }
