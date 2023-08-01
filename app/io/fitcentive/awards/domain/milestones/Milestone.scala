@@ -34,7 +34,7 @@ trait Milestone {
 
 object Milestone {
 
-  val stepMilestonesInOrder = List(
+  val stepMilestonesInOrder: Seq[StepMilestone] = List(
     TenThousandSteps,
     FiftyThousandSteps,
     HundredThousandSteps,
@@ -81,6 +81,10 @@ object Milestone {
 
   implicit lazy val writes: Writes[Milestone] = (o: Milestone) => {
     if (stepMilestonesInOrder.map(_.stringValue).contains(o.stringValue)) Json.toJson(o.asInstanceOf[StepMilestone])
+    else if (diaryEntryMilestonesInOrder.map(_.stringValue).contains(o.stringValue))
+      Json.toJson(o.asInstanceOf[DiaryEntryMilestone])
+    else if (activityMilestonesInOrder.map(_.stringValue).contains(o.stringValue))
+      Json.toJson(o.asInstanceOf[ActivityMilestone])
     else throw new Exception("Unexpected milestone")
   }
 }
