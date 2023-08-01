@@ -8,19 +8,6 @@ trait ActivityMilestone extends Milestone {
 
 object ActivityMilestone {
 
-  val activityMilestonesInOrder: Seq[ActivityMilestone] = List(
-    OneHour,
-    TwoHours,
-    FiveHours,
-    TenHours,
-    TwentyFiveHours,
-    FiftyHours,
-    HundredHours,
-    TwoHundredFiftyHours,
-    FiveHundredHours,
-    ThousandHours,
-  )
-
   def apply(status: String): ActivityMilestone =
     status match {
       case OneHour.stringValue              => OneHour

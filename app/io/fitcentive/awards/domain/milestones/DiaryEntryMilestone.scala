@@ -8,19 +8,6 @@ trait DiaryEntryMilestone extends Milestone {
 
 object DiaryEntryMilestone {
 
-  val diaryEntryMilestonesInOrder: Seq[DiaryEntryMilestone] = List(
-    TenEntries,
-    FiftyEntries,
-    HundredEntries,
-    TwoHundredFiftyEntries,
-    FiveHundredEntries,
-    ThousandEntries,
-    TwoThousandEntries,
-    FiveThousandEntries,
-    TenThousandEntries,
-    TwentyFiveThousandEntries,
-  )
-
   def apply(status: String): DiaryEntryMilestone =
     status match {
       case TenEntries.stringValue                => TenEntries

@@ -8,18 +8,6 @@ trait StepMilestone extends Milestone {
 
 object StepMilestone {
 
-  val stepMilestonesInOrder: Seq[StepMilestone] = List(
-    TenThousandSteps,
-    FiftyThousandSteps,
-    HundredThousandSteps,
-    TwoFiftyThousandSteps,
-    FiveHundredThousandSteps,
-    OneMillionStepsSteps,
-    TwoMillionStepsSteps,
-    FiveMillionStepsSteps,
-    TenMillionStepsSteps,
-  )
-
   def apply(status: String): StepMilestone =
     status match {
       case TenThousandSteps.stringValue         => TenThousandSteps

@@ -1,5 +1,29 @@
 package io.fitcentive.awards.domain.milestones
 
+import io.fitcentive.awards.domain.milestones.ActivityMilestone.{
+  FiftyHours,
+  FiveHours,
+  FiveHundredHours,
+  HundredHours,
+  OneHour,
+  TenHours,
+  ThousandHours,
+  TwentyFiveHours,
+  TwoHours,
+  TwoHundredFiftyHours
+}
+import io.fitcentive.awards.domain.milestones.DiaryEntryMilestone.{
+  FiftyEntries,
+  FiveHundredEntries,
+  FiveThousandEntries,
+  HundredEntries,
+  TenEntries,
+  TenThousandEntries,
+  ThousandEntries,
+  TwentyFiveThousandEntries,
+  TwoHundredFiftyEntries,
+  TwoThousandEntries
+}
 import io.fitcentive.awards.domain.milestones.StepMilestone._
 import play.api.libs.json.{Json, Writes}
 
@@ -22,8 +46,36 @@ object Milestone {
     TenMillionStepsSteps,
   )
 
+  val activityMilestonesInOrder: Seq[ActivityMilestone] = List(
+    OneHour,
+    TwoHours,
+    FiveHours,
+    TenHours,
+    TwentyFiveHours,
+    FiftyHours,
+    HundredHours,
+    TwoHundredFiftyHours,
+    FiveHundredHours,
+    ThousandHours,
+  )
+
+  val diaryEntryMilestonesInOrder: Seq[DiaryEntryMilestone] = List(
+    TenEntries,
+    FiftyEntries,
+    HundredEntries,
+    TwoHundredFiftyEntries,
+    FiveHundredEntries,
+    ThousandEntries,
+    TwoThousandEntries,
+    FiveThousandEntries,
+    TenThousandEntries,
+    TwentyFiveThousandEntries,
+  )
+
   def apply(status: String): Milestone = {
     if (stepMilestonesInOrder.map(_.stringValue).contains(status)) StepMilestone.apply(status)
+    else if (diaryEntryMilestonesInOrder.map(_.stringValue).contains(status)) DiaryEntryMilestone.apply(status)
+    else if (activityMilestonesInOrder.map(_.stringValue).contains(status)) ActivityMilestone.apply(status)
     else throw new Exception("Unexpected milestone")
   }
 

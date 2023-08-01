@@ -5,7 +5,13 @@ import io.fitcentive.awards.api.MetricsApi.{
   diaryMilestonesToEntryCountMap,
   stepMilestonesToStepCountMap
 }
-import io.fitcentive.awards.domain.milestones.{ActivityMilestone, DiaryEntryMilestone, MetricCategory, StepMilestone}
+import io.fitcentive.awards.domain.milestones.{
+  ActivityMilestone,
+  DiaryEntryMilestone,
+  MetricCategory,
+  Milestone,
+  StepMilestone
+}
 import io.fitcentive.awards.repositories._
 import io.fitcentive.awards.services.{MessageBusService, SettingsService}
 
@@ -43,12 +49,12 @@ class MetricsApi @Inject() (
             else None
           } else {
             val indexOfMostRecentlyAttainedMilestone =
-              DiaryEntryMilestone.diaryEntryMilestonesInOrder.indexOf(allDiaryMilestonesAchieved.last.name)
-            if (indexOfMostRecentlyAttainedMilestone == DiaryEntryMilestone.diaryEntryMilestonesInOrder.size - 1)
+              Milestone.diaryEntryMilestonesInOrder.indexOf(allDiaryMilestonesAchieved.last.name)
+            if (indexOfMostRecentlyAttainedMilestone == Milestone.diaryEntryMilestonesInOrder.size - 1)
               None // User attained all milestones
             else {
               val nextPotentialMilestoneToAchieve =
-                DiaryEntryMilestone.diaryEntryMilestonesInOrder(indexOfMostRecentlyAttainedMilestone + 1)
+                Milestone.diaryEntryMilestonesInOrder(indexOfMostRecentlyAttainedMilestone + 1)
 
               if (allTimeDiaryEntries > diaryMilestonesToEntryCountMap(nextPotentialMilestoneToAchieve))
                 Some(nextPotentialMilestoneToAchieve)
@@ -72,12 +78,12 @@ class MetricsApi @Inject() (
             else None
           } else {
             val indexOfMostRecentlyAttainedMilestone =
-              ActivityMilestone.activityMilestonesInOrder.indexOf(allActivityMilestonesAchieved.last.name)
-            if (indexOfMostRecentlyAttainedMilestone == ActivityMilestone.activityMilestonesInOrder.size - 1)
+              Milestone.activityMilestonesInOrder.indexOf(allActivityMilestonesAchieved.last.name)
+            if (indexOfMostRecentlyAttainedMilestone == Milestone.activityMilestonesInOrder.size - 1)
               None // User attained all milestones
             else {
               val nextPotentialMilestoneToAchieve =
-                ActivityMilestone.activityMilestonesInOrder(indexOfMostRecentlyAttainedMilestone + 1)
+                Milestone.activityMilestonesInOrder(indexOfMostRecentlyAttainedMilestone + 1)
 
               if (allTimeActivityMinutes > activityMilestonesToHourCountMap(nextPotentialMilestoneToAchieve) * 60)
                 Some(nextPotentialMilestoneToAchieve)
@@ -110,12 +116,12 @@ class MetricsApi @Inject() (
             else None
           } else {
             val indexOfMostRecentlyAttainedMilestone =
-              StepMilestone.stepMilestonesInOrder.indexOf(allStepMilestonesAttained.last.name)
-            if (indexOfMostRecentlyAttainedMilestone == StepMilestone.stepMilestonesInOrder.size - 1)
+              Milestone.stepMilestonesInOrder.indexOf(allStepMilestonesAttained.last.name)
+            if (indexOfMostRecentlyAttainedMilestone == Milestone.stepMilestonesInOrder.size - 1)
               None // User attained all milestones
             else {
               val nextPotentialMilestoneToAchieve =
-                StepMilestone.stepMilestonesInOrder(indexOfMostRecentlyAttainedMilestone + 1)
+                Milestone.stepMilestonesInOrder(indexOfMostRecentlyAttainedMilestone + 1)
 
               if (allTimeSteps > stepMilestonesToStepCountMap(nextPotentialMilestoneToAchieve))
                 Some(nextPotentialMilestoneToAchieve)
