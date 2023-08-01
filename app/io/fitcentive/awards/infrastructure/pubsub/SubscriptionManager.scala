@@ -46,7 +46,7 @@ class SubscriptionManager(
     subscriber
       .subscribe[UserDiaryEntryCreated](
         environment,
-        config.subscriptionsConfig.userStepDataUpdatedSubscription,
-        config.topicsConfig.userStepDataUpdatedTopic
+        config.subscriptionsConfig.userDiaryEntryCreatedSubscription,
+        config.topicsConfig.userDiaryEntryCreatedTopic
       )(_.payload.toDomain.pipe(handleEvent))
 }
