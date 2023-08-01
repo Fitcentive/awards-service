@@ -44,7 +44,7 @@ class MetricsApi @Inject() (
         // Check if any diary milestones can be attained
         diaryMilestoneToBeAttained = {
           if (allDiaryMilestonesAchieved.isEmpty) {
-            if (allTimeDiaryEntries > diaryMilestonesToEntryCountMap(DiaryEntryMilestone.TenEntries))
+            if (allTimeDiaryEntries >= diaryMilestonesToEntryCountMap(DiaryEntryMilestone.TenEntries))
               Some(DiaryEntryMilestone.TenEntries)
             else None
           } else {
@@ -56,7 +56,7 @@ class MetricsApi @Inject() (
               val nextPotentialMilestoneToAchieve =
                 Milestone.diaryEntryMilestonesInOrder(indexOfMostRecentlyAttainedMilestone + 1)
 
-              if (allTimeDiaryEntries > diaryMilestonesToEntryCountMap(nextPotentialMilestoneToAchieve))
+              if (allTimeDiaryEntries >= diaryMilestonesToEntryCountMap(nextPotentialMilestoneToAchieve))
                 Some(nextPotentialMilestoneToAchieve)
               else None
             }
@@ -73,7 +73,7 @@ class MetricsApi @Inject() (
         // Check if any activity milestones can be attained
         activityMilestoneToBeAttained = {
           if (allActivityMilestonesAchieved.isEmpty) {
-            if (allTimeActivityMinutes > activityMilestonesToHourCountMap(ActivityMilestone.OneHour) * 60)
+            if (allTimeActivityMinutes >= activityMilestonesToHourCountMap(ActivityMilestone.OneHour) * 60)
               Some(ActivityMilestone.OneHour)
             else None
           } else {
@@ -85,7 +85,7 @@ class MetricsApi @Inject() (
               val nextPotentialMilestoneToAchieve =
                 Milestone.activityMilestonesInOrder(indexOfMostRecentlyAttainedMilestone + 1)
 
-              if (allTimeActivityMinutes > activityMilestonesToHourCountMap(nextPotentialMilestoneToAchieve) * 60)
+              if (allTimeActivityMinutes >= activityMilestonesToHourCountMap(nextPotentialMilestoneToAchieve) * 60)
                 Some(nextPotentialMilestoneToAchieve)
               else None
             }
@@ -111,7 +111,7 @@ class MetricsApi @Inject() (
 
         milestoneToBeAttained = {
           if (allStepMilestonesAttained.isEmpty) {
-            if (allTimeSteps > stepMilestonesToStepCountMap(StepMilestone.TenThousandSteps))
+            if (allTimeSteps >= stepMilestonesToStepCountMap(StepMilestone.TenThousandSteps))
               Some(StepMilestone.TenThousandSteps)
             else None
           } else {
@@ -123,7 +123,7 @@ class MetricsApi @Inject() (
               val nextPotentialMilestoneToAchieve =
                 Milestone.stepMilestonesInOrder(indexOfMostRecentlyAttainedMilestone + 1)
 
-              if (allTimeSteps > stepMilestonesToStepCountMap(nextPotentialMilestoneToAchieve))
+              if (allTimeSteps >= stepMilestonesToStepCountMap(nextPotentialMilestoneToAchieve))
                 Some(nextPotentialMilestoneToAchieve)
               else None
             }
