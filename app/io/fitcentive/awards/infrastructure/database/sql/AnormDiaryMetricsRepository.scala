@@ -116,9 +116,9 @@ object AnormDiaryMetricsRepository {
        |from user_diary_metrics
        |where user_id = {userId}::uuid
        |and metric_date::date >= {windowStartDateString}
-       |and metric_date::date <= {windowEndDateString} ;
+       |and metric_date::date <= {windowEndDateString} 
        |group by metric_date
-       |order by metric_date desc
+       |order by metric_date desc ;
        |""".stripMargin
 
   private val SQL_GET_USER_DIARY_ENTRY_COUNT_PER_DAY_WITHIN_WINDOW: String =
@@ -127,9 +127,9 @@ object AnormDiaryMetricsRepository {
        |from user_diary_metrics
        |where user_id = {userId}::uuid
        |and metric_date::date >= {windowStartDateString}
-       |and metric_date::date <= {windowEndDateString} ;
+       |and metric_date::date <= {windowEndDateString} 
        |group by metric_date
-       |order by metric_date desc
+       |order by metric_date desc ;
        |""".stripMargin
 
   private val SQL_GET_USER_ACTIVITY_MINUTES_WITHIN_WINDOW: String =
@@ -173,7 +173,7 @@ object AnormDiaryMetricsRepository {
     s"""
        |select sum(activity_minutes)
        |from user_diary_metrics
-       |where user_id = {userId}::uuid
+       |where user_id = {userId}::uuid ;
        |""".stripMargin
 
   private val SQL_GET_USER_TOTAL_DIARY_ENTRIES_COUNT =
