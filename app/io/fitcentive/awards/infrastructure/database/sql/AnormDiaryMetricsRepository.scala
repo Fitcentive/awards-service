@@ -2,6 +2,7 @@ package io.fitcentive.awards.infrastructure.database.sql
 
 import anorm.{Macro, RowParser, SqlParser}
 import io.fitcentive.awards.domain.metrics.UserDiaryMetrics
+import io.fitcentive.awards.domain.progress.{ActivityMinutesPerDay, DiaryEntryCountPerDay}
 import io.fitcentive.awards.repositories.DiaryMetricsRepository
 import io.fitcentive.sdk.infrastructure.contexts.DatabaseExecutionContext
 import io.fitcentive.sdk.infrastructure.database.DatabaseClient
@@ -70,6 +71,37 @@ class AnormDiaryMetricsRepository @Inject() (val db: Database)(implicit val dbec
     }
   }
 
+  override def getUserDiaryEntryCountPerDayByWindow(
+    userId: UUID,
+    windowStart: String,
+    windowEnd: String
+  ): Future[Seq[DiaryEntryCountPerDay]] = {
+    val sdf = new SimpleDateFormat("yyyy-MM-dd")
+    Future {
+      getRecords(
+        SQL_GET_USER_DIARY_ENTRY_COUNT_PER_DAY_WITHIN_WINDOW,
+        "userId" -> userId,
+        "windowStartDateString" -> sdf.parse(windowStart),
+        "windowEndDateString" -> sdf.parse(windowEnd)
+      )(userDiaryEntryPerDayCountRowParser).map(_.toDomain)
+    }
+  }
+  override def getUserActivityProgressMetrics(
+    userId: UUID,
+    windowStart: String,
+    windowEnd: String
+  ): Future[Seq[ActivityMinutesPerDay]] = {
+    val sdf = new SimpleDateFormat("yyyy-MM-dd")
+    Future {
+      getRecords(
+        SQL_GET_USER_ACTIVITY_MINUTES_PER_DAY_WITHIN_WINDOW,
+        "userId" -> userId,
+        "windowStartDateString" -> sdf.parse(windowStart),
+        "windowEndDateString" -> sdf.parse(windowEnd)
+      )(userActivityMinutesPerDayRowParser).map(_.toDomain)
+    }
+  }
+
   override def deleteAllDiaryMetrics(userId: UUID): Future[Unit] =
     Future {
       executeSqlWithoutReturning(SQL_DELETE_ALL_DIARY_METRICS, Seq("userId" -> userId))
@@ -77,6 +109,29 @@ class AnormDiaryMetricsRepository @Inject() (val db: Database)(implicit val dbec
 }
 
 object AnormDiaryMetricsRepository {
+
+  private val SQL_GET_USER_ACTIVITY_MINUTES_PER_DAY_WITHIN_WINDOW: String =
+    s"""
+       |select metric_date::date, coalesce(sum(activity_minutes), 0) as activity_minutes
+       |from user_diary_metrics
+       |where user_id = {userId}::uuid
+       |and metric_date::date >= {windowStartDateString}
+       |and metric_date::date <= {windowEndDateString} ;
+       |group by metric_date
+       |order by metric_date desc
+       |""".stripMargin
+
+  private val SQL_GET_USER_DIARY_ENTRY_COUNT_PER_DAY_WITHIN_WINDOW: String =
+    s"""
+       |select metric_date::date, count(*) as entry_count
+       |from user_diary_metrics
+       |where user_id = {userId}::uuid
+       |and metric_date::date >= {windowStartDateString}
+       |and metric_date::date <= {windowEndDateString} ;
+       |group by metric_date
+       |order by metric_date desc
+       |""".stripMargin
+
   private val SQL_GET_USER_ACTIVITY_MINUTES_WITHIN_WINDOW: String =
     s"""
        |select coalesce(sum(activity_minutes), 0)
@@ -149,7 +204,27 @@ object AnormDiaryMetricsRepository {
     def toDomain: String = new SimpleDateFormat("MM-dd-yyyy").format(metric_date)
   }
 
+  private case class DiaryEntryPerDayCountRow(metric_date: Date, entry_count: Int) {
+    def toDomain: DiaryEntryCountPerDay =
+      DiaryEntryCountPerDay(
+        metricDate = new SimpleDateFormat("MM-dd-yyyy").format(metric_date),
+        entryCount = entry_count
+      )
+  }
+
+  private case class ActivityMinutesPerDayRow(metric_date: Date, activity_minutes: Int) {
+    def toDomain: ActivityMinutesPerDay =
+      ActivityMinutesPerDay(
+        metricDate = new SimpleDateFormat("MM-dd-yyyy").format(metric_date),
+        activityMinutes = activity_minutes
+      )
+  }
+
   private val userDiaryMetricsRowParser: RowParser[UserDiaryMetricsRow] = Macro.namedParser[UserDiaryMetricsRow]
+  private val userDiaryEntryPerDayCountRowParser: RowParser[DiaryEntryPerDayCountRow] =
+    Macro.namedParser[DiaryEntryPerDayCountRow]
+  private val userActivityMinutesPerDayRowParser: RowParser[ActivityMinutesPerDayRow] =
+    Macro.namedParser[ActivityMinutesPerDayRow]
   private val userDistinctMetricDateRowParser: RowParser[DistinctMetricDateRow] =
     Macro.namedParser[DistinctMetricDateRow]
 }

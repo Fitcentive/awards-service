@@ -7,6 +7,7 @@ import io.fitcentive.sdk.infrastructure.contexts.DatabaseExecutionContext
 import io.fitcentive.sdk.infrastructure.database.DatabaseClient
 import play.api.db.Database
 
+import java.text.SimpleDateFormat
 import java.time.Instant
 import java.util.UUID
 import javax.inject.{Inject, Singleton}
@@ -39,9 +40,30 @@ class AnormStepMetricsRepository @Inject() (val db: Database)(implicit val dbec:
     Future {
       executeSqlWithoutReturning(SQL_DELETE_ALL_STEP_METRICS, Seq("userId" -> userId))
     }
+
+  override def getUserStepMetricsForWindow(userId: UUID, from: String, to: String): Future[Seq[UserStepMetrics]] =
+    Future {
+      val sdf = new SimpleDateFormat("yyyy-MM-dd")
+      getRecords(
+        SQL_GET_USER_STEP_METRICS_FOR_WINDOW,
+        "userId" -> userId,
+        "windowStart" -> sdf.parse(from),
+        "windowEnd" -> sdf.parse(to)
+      )(userStepMetricsRowParser).map(_.toDomain)
+    }
+
 }
 
 object AnormStepMetricsRepository {
+
+  private val SQL_GET_USER_STEP_METRICS_FOR_WINDOW =
+    s"""
+       |select *
+       |from user_step_metrics
+       |where user_id = {userId}::uuid
+       |and metric_date::date >= {windowStart}
+       |and metric_date::date <= {windowEnd} ;
+       |""".stripMargin
 
   private val SQL_DELETE_ALL_STEP_METRICS =
     s"""

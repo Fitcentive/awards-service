@@ -12,4 +12,5 @@ trait StepMetricsRepository {
   def upsertUserStepDataForDay(userId: UUID, dateString: String, stepsTaken: Int): Future[UserStepMetrics]
   def getUserAllTimeStepsTaken(userId: UUID): Future[Int]
   def deleteAllStepMetrics(userId: UUID): Future[Unit]
+  def getUserStepMetricsForWindow(userId: UUID, from: String, to: String): Future[Seq[UserStepMetrics]]
 }

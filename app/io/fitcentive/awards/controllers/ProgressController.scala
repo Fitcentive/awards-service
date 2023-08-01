@@ -25,6 +25,29 @@ class ProgressController @Inject() (
   //---------------------
   // User auth routes
   //---------------------
+  def getUserStepProgressMetrics(from: String, to: String): Action[AnyContent] =
+    userAuthAction.async { implicit userRequest =>
+      progressApi
+        .getUserStepProgressMetrics(userRequest.authorizedUser.userId, from, to)
+        .map(metrics => Ok(Json.toJson(metrics)))
+        .recover(resultErrorAsyncHandler)
+    }
+
+  def getUserDiaryProgressMetrics(from: String, to: String): Action[AnyContent] =
+    userAuthAction.async { implicit userRequest =>
+      progressApi
+        .getUserDiaryEntryProgressMetrics(userRequest.authorizedUser.userId, from, to)
+        .map(metrics => Ok(Json.toJson(metrics)))
+        .recover(resultErrorAsyncHandler)
+    }
+
+  def getUserActivityProgressMetrics(from: String, to: String): Action[AnyContent] =
+    userAuthAction.async { implicit userRequest =>
+      progressApi
+        .getUserActivityProgressMetrics(userRequest.authorizedUser.userId, from, to)
+        .map(metrics => Ok(Json.toJson(metrics)))
+        .recover(resultErrorAsyncHandler)
+    }
 
   def getUserProgressInsights(offsetInMinutes: Int): Action[AnyContent] =
     userAuthAction.async { implicit userRequest =>

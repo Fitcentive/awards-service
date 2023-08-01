@@ -1,6 +1,7 @@
 package io.fitcentive.awards.api
 
-import io.fitcentive.awards.domain.progress.ProgressInsights
+import io.fitcentive.awards.domain.metrics.UserStepMetrics
+import io.fitcentive.awards.domain.progress.{ActivityMinutesPerDay, DiaryEntryCountPerDay, ProgressInsights}
 import io.fitcentive.awards.repositories._
 import io.fitcentive.awards.services.{MessageBusService, SettingsService}
 
@@ -10,15 +11,11 @@ import java.time.temporal.ChronoUnit
 import java.util.UUID
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.chaining.scalaUtilChainingOps
 
 @Singleton
 class ProgressApi @Inject() (
   stepMetricsRepository: StepMetricsRepository,
   diaryMetricsRepository: DiaryMetricsRepository,
-  userMilestonesRepository: UserMilestonesRepository,
-  messageBusService: MessageBusService,
-  settingsService: SettingsService
 )(implicit ec: ExecutionContext) {
 
   private def calculateDiaryEntryStreak(distinctDateStrings: Seq[String], offsetInMinutes: Int): Int = {
@@ -55,5 +52,14 @@ class ProgressApi @Inject() (
       activityMinutesForTheWeek <-
         diaryMetricsRepository.getUserActivityMinutesForWindow(userId, windowStart, windowEnd)
     } yield ProgressInsights(currentDiaryEntryStreak, activityMinutesForTheWeek)
+
+  def getUserStepProgressMetrics(userId: UUID, from: String, to: String): Future[Seq[UserStepMetrics]] =
+    stepMetricsRepository.getUserStepMetricsForWindow(userId, from, to)
+
+  def getUserDiaryEntryProgressMetrics(userId: UUID, from: String, to: String): Future[Seq[DiaryEntryCountPerDay]] =
+    diaryMetricsRepository.getUserDiaryEntryCountPerDayByWindow(userId, from, to)
+
+  def getUserActivityProgressMetrics(userId: UUID, from: String, to: String): Future[Seq[ActivityMinutesPerDay]] =
+    diaryMetricsRepository.getUserActivityProgressMetrics(userId, from, to)
 
 }
