@@ -1,6 +1,6 @@
 package io.fitcentive.awards.infrastructure.database.sql
 
-import anorm.{Macro, RowParser}
+import anorm.{Macro, RowParser, SqlParser}
 import io.fitcentive.awards.domain.metrics.UserStepMetrics
 import io.fitcentive.awards.repositories.StepMetricsRepository
 import io.fitcentive.sdk.infrastructure.contexts.DatabaseExecutionContext
@@ -32,7 +32,7 @@ class AnormStepMetricsRepository @Inject() (val db: Database)(implicit val dbec:
 
   override def getUserAllTimeStepsTaken(userId: UUID): Future[Int] =
     Future {
-      getRecords(SQL_GET_ALL_USER_STEP_DATA, "userId" -> userId)(userStepMetricsRowParser).map(_.steps_taken).sum
+      executeSqlWithExpectedReturn(SQL_GET_USER_ALL_TIME_STEPS_TAKEN, Seq("userId" -> userId))(SqlParser.scalar[Int])
     }
 
   override def deleteAllStepMetrics(userId: UUID): Future[Unit] =
@@ -49,9 +49,9 @@ object AnormStepMetricsRepository {
        |where user_id = {userId}::uuid ;
        |""".stripMargin
 
-  private val SQL_GET_ALL_USER_STEP_DATA =
+  private val SQL_GET_USER_ALL_TIME_STEPS_TAKEN =
     s"""
-       |select *
+       |select sum(steps_taken)
        |from user_step_metrics
        |where user_id = {userId}::uuid ;
        |""".stripMargin
