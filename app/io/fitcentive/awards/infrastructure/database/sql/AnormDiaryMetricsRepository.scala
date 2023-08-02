@@ -201,13 +201,13 @@ object AnormDiaryMetricsRepository {
   }
 
   private case class DistinctMetricDateRow(metric_date: Date) {
-    def toDomain: String = new SimpleDateFormat("MM-dd-yyyy").format(metric_date)
+    def toDomain: String = new SimpleDateFormat("yyyy-MM-dd").format(metric_date)
   }
 
   private case class DiaryEntryPerDayCountRow(metric_date: Date, entry_count: Int) {
     def toDomain: DiaryEntryCountPerDay =
       DiaryEntryCountPerDay(
-        metricDate = new SimpleDateFormat("MM-dd-yyyy").format(metric_date),
+        metricDate = new SimpleDateFormat("yyyy-MM-dd").format(metric_date),
         entryCount = entry_count
       )
   }
@@ -215,7 +215,7 @@ object AnormDiaryMetricsRepository {
   private case class ActivityMinutesPerDayRow(metric_date: Date, activity_minutes: Int) {
     def toDomain: ActivityMinutesPerDay =
       ActivityMinutesPerDay(
-        metricDate = new SimpleDateFormat("MM-dd-yyyy").format(metric_date),
+        metricDate = new SimpleDateFormat("yyyy-MM-dd").format(metric_date),
         activityMinutes = activity_minutes
       )
   }

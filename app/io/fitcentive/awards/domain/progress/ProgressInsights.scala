@@ -28,7 +28,7 @@ object ProgressInsights {
       else if (userDiaryEntryStreak == 1) ProgressInsight("Your diary entry streak began yesterday", 1)
       else if (userDiaryEntryStreak >= 2 && userDiaryEntryStreak <= 5)
         ProgressInsight(s"You are on a $userDiaryEntryStreak day diary entry streak!", 1)
-      else ProgressInsight(s"Your are on a $userDiaryEntryStreak day diary entry streak!", 2)
+      else ProgressInsight(s"You are on a $userDiaryEntryStreak day diary entry streak!", 2)
     }
 
     val activityMinutesInsight = {

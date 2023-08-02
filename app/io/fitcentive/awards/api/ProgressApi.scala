@@ -20,14 +20,17 @@ class ProgressApi @Inject() (
 
   private def calculateDiaryEntryStreak(distinctDateStrings: Seq[String], offsetInMinutes: Int): Int = {
     def calculateInternal(currentIndex: Int): Int = {
-      val currentDay = LocalDateTime
-        .ofInstant(Instant.now(), ZoneOffset.UTC)
-        .plus(-offsetInMinutes, ChronoUnit.MINUTES)
-        .minus(currentIndex, ChronoUnit.DAYS)
-        .format(DateTimeFormatter.ISO_LOCAL_DATE)
+      if (currentIndex >= distinctDateStrings.length) 0
+      else {
+        val currentDay = LocalDateTime
+          .ofInstant(Instant.now(), ZoneOffset.UTC)
+          .plus(-offsetInMinutes, ChronoUnit.MINUTES)
+          .minus(currentIndex, ChronoUnit.DAYS)
+          .format(DateTimeFormatter.ISO_LOCAL_DATE)
 
-      if (distinctDateStrings(currentIndex) == currentDay) 1 + calculateInternal(currentIndex + 1)
-      else 0
+        if (distinctDateStrings(currentIndex) == currentDay) 1 + calculateInternal(currentIndex + 1)
+        else 0
+      }
     }
     calculateInternal(0)
   }
