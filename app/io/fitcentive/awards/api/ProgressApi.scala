@@ -1,9 +1,9 @@
 package io.fitcentive.awards.api
 
-import io.fitcentive.awards.domain.metrics.UserStepMetrics
+import io.fitcentive.awards.domain.metrics.{UserStepMetrics, UserWeightMetrics}
 import io.fitcentive.awards.domain.progress.{ActivityMinutesPerDay, DiaryEntryCountPerDay, ProgressInsights}
+import io.fitcentive.awards.infrastructure.utils.StreakSupport
 import io.fitcentive.awards.repositories._
-import io.fitcentive.awards.services.{MessageBusService, SettingsService}
 
 import java.time.format.DateTimeFormatter
 import java.time.{Instant, LocalDateTime, ZoneOffset}
@@ -15,30 +15,18 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class ProgressApi @Inject() (
   stepMetricsRepository: StepMetricsRepository,
+  weightMetricsRepository: WeightMetricsRepository,
   diaryMetricsRepository: DiaryMetricsRepository,
-)(implicit ec: ExecutionContext) {
-
-  private def calculateDiaryEntryStreak(distinctDateStrings: Seq[String], offsetInMinutes: Int): Int = {
-    def calculateInternal(currentIndex: Int): Int = {
-      if (currentIndex >= distinctDateStrings.length) 0
-      else {
-        val currentDay = LocalDateTime
-          .ofInstant(Instant.now(), ZoneOffset.UTC)
-          .plus(-offsetInMinutes, ChronoUnit.MINUTES)
-          .minus(currentIndex, ChronoUnit.DAYS)
-          .format(DateTimeFormatter.ISO_LOCAL_DATE)
-
-        if (distinctDateStrings(currentIndex) == currentDay) 1 + calculateInternal(currentIndex + 1)
-        else 0
-      }
-    }
-    calculateInternal(0)
-  }
+)(implicit ec: ExecutionContext)
+  extends StreakSupport {
 
   def getUserProgressInsights(userId: UUID, offsetInMinutes: Int): Future[ProgressInsights] =
     for {
+      allTimeWeightEntries <- weightMetricsRepository.getUserAllTimeWeightEntries(userId)
+      currentWeightEntryStreak = calculateStreak(allTimeWeightEntries.map(_.metricDate))
+
       distinctDiaryEntryDates <- diaryMetricsRepository.getUserAllTimeDistinctEntryDates(userId)
-      currentDiaryEntryStreak = calculateDiaryEntryStreak(distinctDiaryEntryDates, offsetInMinutes)
+      currentDiaryEntryStreak = calculateStreak(distinctDiaryEntryDates, offsetInMinutes)
 
       now = Instant.now()
       windowEnd =
@@ -54,7 +42,7 @@ class ProgressApi @Inject() (
           .format(DateTimeFormatter.ISO_LOCAL_DATE)
       activityMinutesForTheWeek <-
         diaryMetricsRepository.getUserActivityMinutesForWindow(userId, windowStart, windowEnd)
-    } yield ProgressInsights(currentDiaryEntryStreak, activityMinutesForTheWeek)
+    } yield ProgressInsights(currentWeightEntryStreak, currentDiaryEntryStreak, activityMinutesForTheWeek)
 
   def getUserStepProgressMetrics(userId: UUID, from: String, to: String): Future[Seq[UserStepMetrics]] =
     stepMetricsRepository.getUserStepMetricsForWindow(userId, from, to)
@@ -64,5 +52,8 @@ class ProgressApi @Inject() (
 
   def getUserActivityProgressMetrics(userId: UUID, from: String, to: String): Future[Seq[ActivityMinutesPerDay]] =
     diaryMetricsRepository.getUserActivityProgressMetrics(userId, from, to)
+
+  def getUserWeightProgressMetrics(userId: UUID, from: String, to: String): Future[Seq[UserWeightMetrics]] =
+    weightMetricsRepository.getUserWeightMetricsForWindow(userId, from, to)
 
 }

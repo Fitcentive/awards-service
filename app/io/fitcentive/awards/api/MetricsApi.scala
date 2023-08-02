@@ -1,19 +1,16 @@
 package io.fitcentive.awards.api
 
-import io.fitcentive.awards.api.MetricsApi.{
-  activityMilestonesToHourCountMap,
-  diaryMilestonesToEntryCountMap,
-  stepMilestonesToStepCountMap
-}
 import io.fitcentive.awards.domain.milestones.{
   ActivityMilestone,
   DiaryEntryMilestone,
   MetricCategory,
   Milestone,
-  StepMilestone
+  StepMilestone,
+  WeightMilestone
 }
+import io.fitcentive.awards.infrastructure.utils.StreakSupport
 import io.fitcentive.awards.repositories._
-import io.fitcentive.awards.services.{MessageBusService, SettingsService}
+import io.fitcentive.awards.services.MessageBusService
 
 import java.util.UUID
 import javax.inject.{Inject, Singleton}
@@ -22,11 +19,57 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class MetricsApi @Inject() (
   stepMetricsRepository: StepMetricsRepository,
+  weightMetricsRepository: WeightMetricsRepository,
   diaryMetricsRepository: DiaryMetricsRepository,
   userMilestonesRepository: UserMilestonesRepository,
   messageBusService: MessageBusService,
-  settingsService: SettingsService
-)(implicit ec: ExecutionContext) {
+)(implicit ec: ExecutionContext)
+  extends StreakSupport {
+
+  import MetricsApi._
+
+  // We wrap this in a future so that the calling event handler can report success immediately instead of waiting
+  def handleUserWeightUpdatedEvent(userId: UUID, date: String, newWeightInLbs: Double): Future[Unit] =
+    Future {
+      for {
+        _ <- weightMetricsRepository.upsertUserWeightDataForDay(userId, date, newWeightInLbs)
+        allTimeWeightEntries <- weightMetricsRepository.getUserAllTimeWeightEntries(userId)
+        currentWeightEntryStreak = calculateStreak(allTimeWeightEntries.map(_.metricDate))
+
+        allWeightMilestonesAttained <-
+          userMilestonesRepository.getUserMilestonesByCategory(userId, MetricCategory.WeightData)
+
+        milestoneToBeAttained = {
+          if (allWeightMilestonesAttained.isEmpty) {
+            if (currentWeightEntryStreak >= weightMilestonesToHourCountMap(WeightMilestone.ThreeDayStreak))
+              Some(WeightMilestone.ThreeDayStreak)
+            else None
+          } else {
+            val indexOfMostRecentlyAttainedMilestone =
+              Milestone.weightMilestonesInOrder.indexOf(allWeightMilestonesAttained.last.name)
+            if (indexOfMostRecentlyAttainedMilestone == Milestone.weightMilestonesInOrder.size - 1)
+              None // User attained all milestones
+            else {
+              val nextPotentialMilestoneToAchieve =
+                Milestone.weightMilestonesInOrder(indexOfMostRecentlyAttainedMilestone + 1)
+
+              if (currentWeightEntryStreak >= weightMilestonesToHourCountMap(nextPotentialMilestoneToAchieve))
+                Some(nextPotentialMilestoneToAchieve)
+              else None
+            }
+
+          }
+        }
+
+        _ <- milestoneToBeAttained.fold(Future.unit)(
+          newMilestoneToInsert =>
+            userMilestonesRepository
+              .createUserMilestone(userId, newMilestoneToInsert, MetricCategory.WeightData)
+              .flatMap(messageBusService.publishUserAttainedNewAchievementMilestoneEvent)
+        )
+
+      } yield ()
+    }
 
   // We wrap this in a future so that the calling event handler can report success immediately instead of waiting
   def handleUserDiaryEntryCreatedEvent(userId: UUID, date: String, activityMinutes: Option[Int]): Future[Unit] =
@@ -190,5 +233,18 @@ object MetricsApi {
     ActivityMilestone.TwoHundredFiftyHours -> 250,
     ActivityMilestone.FiveHundredHours -> 500,
     ActivityMilestone.ThousandHours -> 1000,
+  )
+
+  val weightMilestonesToHourCountMap: Map[WeightMilestone, Int] = Map(
+    WeightMilestone.ThreeDayStreak -> 3,
+    WeightMilestone.OneWeekStreak -> 7,
+    WeightMilestone.TenDayStreak -> 10,
+    WeightMilestone.TwoWeekStreak -> 14,
+    WeightMilestone.ThreeWeekStreak -> 21,
+    WeightMilestone.OneMonthStreak -> 30,
+    WeightMilestone.TwoMonthStreak -> 60,
+    WeightMilestone.ThreeMonthStreak -> 90,
+    WeightMilestone.SixMonthStreak -> 180,
+    WeightMilestone.OneYearStreak -> 365,
   )
 }

@@ -14,6 +14,7 @@ GET      /api/awards/progress/insights                                          
 GET      /api/awards/progress/steps                                                     io.fitcentive.awards.controllers.ProgressController.getUserStepProgressMetrics(from: String, to: String)
 GET      /api/awards/progress/diary                                                     io.fitcentive.awards.controllers.ProgressController.getUserDiaryProgressMetrics(from: String, to: String)
 GET      /api/awards/progress/activity                                                  io.fitcentive.awards.controllers.ProgressController.getUserActivityProgressMetrics(from: String, to: String)
+GET      /api/awards/progress/weight                                                    io.fitcentive.awards.controllers.ProgressController.getUserWeightProgressMetrics(from: String, to: String)
 
 # Internal routes
 DELETE   /api/internal/awards/user/:userId                                              io.fitcentive.awards.controllers.MetricsController.deleteUserData(userId: java.util.UUID)

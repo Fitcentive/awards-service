@@ -49,6 +49,14 @@ class ProgressController @Inject() (
         .recover(resultErrorAsyncHandler)
     }
 
+  def getUserWeightProgressMetrics(from: String, to: String): Action[AnyContent] =
+    userAuthAction.async { implicit userRequest =>
+      progressApi
+        .getUserWeightProgressMetrics(userRequest.authorizedUser.userId, from, to)
+        .map(metrics => Ok(Json.toJson(metrics)))
+        .recover(resultErrorAsyncHandler)
+    }
+
   def getUserProgressInsights(offsetInMinutes: Int): Action[AnyContent] =
     userAuthAction.async { implicit userRequest =>
       progressApi

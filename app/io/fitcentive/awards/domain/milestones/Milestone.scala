@@ -1,30 +1,9 @@
 package io.fitcentive.awards.domain.milestones
 
-import io.fitcentive.awards.domain.milestones.ActivityMilestone.{
-  FiftyHours,
-  FiveHours,
-  FiveHundredHours,
-  HundredHours,
-  OneHour,
-  TenHours,
-  ThousandHours,
-  TwentyFiveHours,
-  TwoHours,
-  TwoHundredFiftyHours
-}
-import io.fitcentive.awards.domain.milestones.DiaryEntryMilestone.{
-  FiftyEntries,
-  FiveHundredEntries,
-  FiveThousandEntries,
-  HundredEntries,
-  TenEntries,
-  TenThousandEntries,
-  ThousandEntries,
-  TwentyFiveThousandEntries,
-  TwoHundredFiftyEntries,
-  TwoThousandEntries
-}
+import io.fitcentive.awards.domain.milestones.ActivityMilestone._
+import io.fitcentive.awards.domain.milestones.DiaryEntryMilestone._
 import io.fitcentive.awards.domain.milestones.StepMilestone._
+import io.fitcentive.awards.domain.milestones.WeightMilestone._
 import play.api.libs.json.{Json, Writes}
 
 trait Milestone {
@@ -72,10 +51,24 @@ object Milestone {
     TwentyFiveThousandEntries,
   )
 
+  val weightMilestonesInOrder: Seq[WeightMilestone] = List(
+    ThreeDayStreak,
+    OneWeekStreak,
+    TenDayStreak,
+    TwoWeekStreak,
+    ThreeWeekStreak,
+    OneMonthStreak,
+    TwoMonthStreak,
+    ThreeMonthStreak,
+    SixMonthStreak,
+    OneYearStreak,
+  )
+
   def apply(status: String): Milestone = {
     if (stepMilestonesInOrder.map(_.stringValue).contains(status)) StepMilestone.apply(status)
     else if (diaryEntryMilestonesInOrder.map(_.stringValue).contains(status)) DiaryEntryMilestone.apply(status)
     else if (activityMilestonesInOrder.map(_.stringValue).contains(status)) ActivityMilestone.apply(status)
+    else if (weightMilestonesInOrder.map(_.stringValue).contains(status)) WeightMilestone.apply(status)
     else throw new Exception("Unexpected milestone")
   }
 
@@ -85,6 +78,8 @@ object Milestone {
       Json.toJson(o.asInstanceOf[DiaryEntryMilestone])
     else if (activityMilestonesInOrder.map(_.stringValue).contains(o.stringValue))
       Json.toJson(o.asInstanceOf[ActivityMilestone])
+    else if (weightMilestonesInOrder.map(_.stringValue).contains(o.stringValue))
+      Json.toJson(o.asInstanceOf[WeightMilestone])
     else throw new Exception("Unexpected milestone")
   }
 }

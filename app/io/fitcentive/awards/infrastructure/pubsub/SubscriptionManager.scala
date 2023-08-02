@@ -1,13 +1,13 @@
 package io.fitcentive.awards.infrastructure.pubsub
 
 import io.fitcentive.awards.domain.config.AppPubSubConfig
-import io.fitcentive.awards.domain.events.{EventHandlers, UserDiaryEntryCreatedEvent, UserStepDataUpdatedEvent}
+import io.fitcentive.awards.domain.events.EventHandlers
 import io.fitcentive.awards.infrastructure.contexts.PubSubExecutionContext
 import io.fitcentive.registry.events.steps.UserStepDataUpdated
 import io.fitcentive.sdk.gcp.pubsub.{PubSubPublisher, PubSubSubscriber}
 import io.fitcentive.sdk.logging.AppLogger
 import io.fitcentive.awards.infrastructure.AntiCorruptionDomain
-import io.fitcentive.registry.events.diary.UserDiaryEntryCreated
+import io.fitcentive.registry.events.diary.{UserDiaryEntryCreated, UserWeightUpdated}
 
 import scala.concurrent.Future
 import scala.util.chaining.scalaUtilChainingOps
@@ -30,6 +30,7 @@ class SubscriptionManager(
       _ <- Future.sequence(config.topicsConfig.topics.map(publisher.createTopic))
       _ <- subscribeToUserStepData
       _ <- subscribeToUserDiaryData
+      _ <- subscribeToUserWeightData
       _ = logInfo("Subscriptions set up successfully!")
     } yield ()
   }
@@ -48,5 +49,13 @@ class SubscriptionManager(
         environment,
         config.subscriptionsConfig.userDiaryEntryCreatedSubscription,
         config.topicsConfig.userDiaryEntryCreatedTopic
+      )(_.payload.toDomain.pipe(handleEvent))
+
+  private def subscribeToUserWeightData: Future[Unit] =
+    subscriber
+      .subscribe[UserWeightUpdated](
+        environment,
+        config.subscriptionsConfig.userWeightUpdatedSubscription,
+        config.topicsConfig.userWeightUpdatedTopic
       )(_.payload.toDomain.pipe(handleEvent))
 }

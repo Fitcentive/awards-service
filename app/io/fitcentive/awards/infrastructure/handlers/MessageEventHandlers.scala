@@ -5,7 +5,8 @@ import io.fitcentive.awards.domain.events.{
   EventHandlers,
   EventMessage,
   UserDiaryEntryCreatedEvent,
-  UserStepDataUpdatedEvent
+  UserStepDataUpdatedEvent,
+  UserWeightUpdatedEvent
 }
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -17,6 +18,9 @@ trait MessageEventHandlers extends EventHandlers {
 
   override def handleEvent(event: EventMessage): Future[Unit] =
     event match {
+
+      case event: UserWeightUpdatedEvent =>
+        metricsApi.handleUserWeightUpdatedEvent(event.userId, event.date, event.newWeightInLbs).map(_ => ())
 
       case event: UserDiaryEntryCreatedEvent =>
         metricsApi.handleUserDiaryEntryCreatedEvent(event.userId, event.date, event.activityMinutes).map(_ => ())

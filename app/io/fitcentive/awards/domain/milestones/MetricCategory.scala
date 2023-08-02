@@ -13,6 +13,7 @@ object MetricCategory {
       case StepData.stringValue       => StepData
       case DiaryEntryData.stringValue => DiaryEntryData
       case ActivityData.stringValue   => ActivityData
+      case WeightData.stringValue     => WeightData
       case _                          => throw new Exception("Unexpected metric category")
     }
 
@@ -21,6 +22,7 @@ object MetricCategory {
       case StepData       => JsString(StepData.stringValue)
       case DiaryEntryData => JsString(DiaryEntryData.stringValue)
       case ActivityData   => JsString(ActivityData.stringValue)
+      case WeightData     => JsString(WeightData.stringValue)
     }
   }
 
@@ -34,6 +36,10 @@ object MetricCategory {
 
   case object ActivityData extends MetricCategory {
     val stringValue = "ActivityData"
+  }
+
+  case object WeightData extends MetricCategory {
+    val stringValue = "WeightData"
   }
 
 }

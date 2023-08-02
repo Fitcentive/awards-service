@@ -22,7 +22,19 @@ object ProgressInsight {
 object ProgressInsights {
   implicit lazy val writes: Writes[ProgressInsights] = Json.writes[ProgressInsights]
 
-  def apply(userDiaryEntryStreak: Int, userActivityMinutesForLast7Days: Int): ProgressInsights = {
+  def apply(
+    currentWeightEntryStreak: Int,
+    userDiaryEntryStreak: Int,
+    userActivityMinutesForLast7Days: Int
+  ): ProgressInsights = {
+    val weightInsight = {
+      if (currentWeightEntryStreak == 0) ProgressInsight("You should try to log your weight more frequently", 0)
+      else if (currentWeightEntryStreak == 1) ProgressInsight("Your weight logging streak began yesterday", 1)
+      else if (currentWeightEntryStreak >= 2 && currentWeightEntryStreak <= 5)
+        ProgressInsight(s"You are on a $currentWeightEntryStreak day weight logging streak!", 1)
+      else ProgressInsight(s"You are on a $currentWeightEntryStreak day weight logging streak!", 2)
+    }
+
     val diaryEntryInsight = {
       if (userDiaryEntryStreak == 0) ProgressInsight("You should try to log your activity more", 0)
       else if (userDiaryEntryStreak == 1) ProgressInsight("Your diary entry streak began yesterday", 1)
@@ -39,7 +51,7 @@ object ProgressInsights {
     }
 
     new ProgressInsights(
-      userWeightProgressInsight = ProgressInsight("No info", 1),
+      userWeightProgressInsight = weightInsight,
       userDiaryEntryProgressInsight = diaryEntryInsight,
       userActivityMinutesProgressInsight = activityMinutesInsight,
     )

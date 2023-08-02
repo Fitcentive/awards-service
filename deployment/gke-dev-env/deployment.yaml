@@ -82,6 +82,10 @@ spec:
               value: "user-diary-entry-created"
             - name: SUBSCRIPTION_USER_DIARY_ENTRY_CREATED
               value: "user-diary-entry-created"
+            - name: TOPIC_USER_WEIGHT_UPDATED
+              value: "user-weight-updated"
+            - name: SUBSCRIPTION_USER_WEIGHT_UPDATED
+              value: "user-weight-updated"
       volumes:
         - name: cloudsql-creds
           secret:
